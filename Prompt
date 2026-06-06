@@ -1,0 +1,123 @@
+# MoneyMonitor - Personal Expense Management System
+
+import sqlite3
+
+# Database Connection
+conn = sqlite3.connect("moneymonitor.db")
+cursor = conn.cursor()
+
+# Create Table
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS expenses(
+    expense_id INTEGER PRIMARY KEY,
+    date TEXT,
+    category TEXT,
+    amount REAL,
+    description TEXT
+)
+""")
+conn.commit()
+
+# Add Expense
+def add_expense():
+    expense_id = int(input("Enter Expense ID: "))
+    date = input("Enter Date (DD-MM-YYYY): ")
+    category = input("Enter Category: ")
+    amount = float(input("Enter Amount: "))
+    description = input("Enter Description: ")
+
+    cursor.execute(
+        "INSERT INTO expenses VALUES (?, ?, ?, ?, ?)",
+        (expense_id, date, category, amount, description)
+    )
+
+    conn.commit()
+    print("Expense Added Successfully!")
+
+# View Expenses
+def view_expenses():
+    cursor.execute("SELECT * FROM expenses")
+    records = cursor.fetchall()
+
+    if not records:
+        print("No Expense Records Found.")
+    else:
+        print("\n===== EXPENSE RECORDS =====")
+        for record in records:
+            print(record)
+
+# Search Expense
+def search_expense():
+    expense_id = int(input("Enter Expense ID: "))
+
+    cursor.execute(
+        "SELECT * FROM expenses WHERE expense_id=?",
+        (expense_id,)
+    )
+
+    record = cursor.fetchone()
+
+    if record:
+        print("\nExpense Found:")
+        print(record)
+    else:
+        print("Expense Not Found.")
+
+# Delete Expense
+def delete_expense():
+    expense_id = int(input("Enter Expense ID to Delete: "))
+
+    cursor.execute(
+        "DELETE FROM expenses WHERE expense_id=?",
+        (expense_id,)
+    )
+
+    conn.commit()
+    print("Expense Deleted Successfully!")
+
+# Calculate Total Expenses
+def total_expenses():
+    cursor.execute("SELECT SUM(amount) FROM expenses")
+    total = cursor.fetchone()[0]
+
+    if total is None:
+        total = 0
+
+    print(f"Total Expenses: ₹{total}")
+
+# Main Menu
+while True:
+
+    print("\n========== MONEYMONITOR ==========")
+    print("1. Add Expense")
+    print("2. View Expenses")
+    print("3. Search Expense")
+    print("4. Delete Expense")
+    print("5. Total Expenses")
+    print("6. Exit")
+
+    choice = input("Enter Your Choice: ")
+
+    if choice == "1":
+        add_expense()
+
+    elif choice == "2":
+        view_expenses()
+
+    elif choice == "3":
+        search_expense()
+
+    elif choice == "4":
+        delete_expense()
+
+    elif choice == "5":
+        total_expenses()
+
+    elif choice == "6":
+        print("Thank You For Using MoneyMonitor!")
+        break
+
+    else:
+        print("Invalid Choice. Please Try Again.")
+
+conn.close()
